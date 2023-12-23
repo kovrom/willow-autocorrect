@@ -101,6 +101,28 @@ OPENAI_TEMPERATURE = config(
 COMMAND_NOT_FOUND = config(
     'COMMAND_NOT_FOUND', default="Sorry, I can't find that command", cast=str)
 
+# Allow user to adjust feedback text for learned and corrected commands
+COMMAND_LEARNED = config(
+    'COMMAND_LEARNED', default="and learned command", cast=str)
+
+COMMAND_CORRECTED = config(
+    'COMMAND_CORRECTED', default="with corrected command", cast=str)
+# Allow user to skip commands from autolearning
+COMMANDS_TO_SKIP = config(
+    'COMMANDS_TO_SKIP', default='[]')
+ 
+
+# Getting list of commands to skip
+# Convert the string to a Python list
+try:
+    commands_to_skip_list = json.loads(COMMANDS_TO_SKIP)
+except json.JSONDecodeError:
+# Handle the case where the string is not a valid JSON list
+    log.info(f"Error: COMMANDS_TO_SKIP is not a valid JSON list.")
+    commands_to_skip_list = []
+# Convert COMMANDS_TO_SKIP into a tuple for startswith
+skip_tuple = tuple(commands_to_skip_list)
+
 FORCE_OPENAI_MODEL = None
 
 logging.basicConfig(
@@ -520,13 +542,16 @@ def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_ma
             log.info(f"No Initial HA Intent Match for command '{command}'")
         else:
             log.info(f"Initial HA Intent Match for command '{command}'")
-            learned = wac_add(command, rank=0.9, source='autolearn')
+            if not command.startswith(skip_tuple):
+               learned = wac_add(command, rank=0.9, source='autolearn')
+            else:
+               log.info(f"Skipping command '{command}' as it's in the skip list")    
             speech = json_get_default(
                 ha_response, "/response/speech/plain/speech", "Success")
             # Set speech to HA response and return
             log.info(f"Setting speech to HA response '{speech}'")
             if learned is True and FEEDBACK is True:
-                speech = f"{speech} and learned command"
+                speech = f"{speech}. {COMMAND_LEARNED}"
             log.info('HA took ' + str(first_ha_time_milliseconds) + ' ms')
             return speech
     except Exception as e:
@@ -565,7 +590,7 @@ def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_ma
                 ha_response, "/response/speech/plain/speech", "Success")
             log.info(f"HA speech: '{speech}'")
             if FEEDBACK is True:
-                speech = f"{speech} with corrected command {wac_command}"
+                speech = f"{speech}. {COMMAND_CORRECTED}: {wac_command}"
             log.info(f"Setting final speech to '{speech}'")
         except Exception as e:
             log.exception(f"WAC FAILED with {e}")

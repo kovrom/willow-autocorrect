@@ -41,6 +41,14 @@ HA_URL="http://your_home_assistant_host:8123"
 
 You can get these from WAS or HA.
 
+To adjust how WAC responds, what commands not to autolearn, etc add and edit following to `.env` file:
+```
+COMMAND_LEARNED="Learned new command."
+COMMAND_CORRECTED="I used command"
+COMMANDS_TO_SKIP='["Ask GPT", "Ask Echo"]'
+FEEDBACK=True 
+```
+
 Start things up:
 
 ```
