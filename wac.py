@@ -637,7 +637,7 @@ def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_ma
             #Done with forwarding
 
 
-    if second_ha_time_milliseconds is not None and FORWARD_TO_CHAT is True:
+    if second_ha_time_milliseconds is not None and FORWARD_TO_CHAT is True and third_ha_time_milliseconds is not None:
         total_ha_time = first_ha_time_milliseconds + second_ha_time_milliseconds + third_ha_time_milliseconds
     elif second_ha_time_milliseconds is not None:
         total_ha_time = first_ha_time_milliseconds + second_ha_time_milliseconds
