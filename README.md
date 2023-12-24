@@ -33,7 +33,7 @@ That said this is a very, very early technology preview. Caveat emptor!
 
 Clone this repo.
 
-Add your Home Assistant base URL and long-lived access token to `.env`:
+### Add your Home Assistant base URL and long-lived access token to `.env`:
 ```
 HA_TOKEN="shhh_your_token"
 HA_URL="http://your_home_assistant_host:8123"
@@ -41,12 +41,34 @@ HA_URL="http://your_home_assistant_host:8123"
 
 You can get these from WAS or HA.
 
-To adjust how WAC responds, what commands not to autolearn, etc add and edit following to `.env` file:
+### To adjust how WAC responds, what commands not to autolearn, etc add and edit following to `.env` file:
 ```
 COMMAND_LEARNED="Learned new command."
 COMMAND_CORRECTED="I used command"
 COMMANDS_TO_SKIP='["Ask GPT", "Ask Echo"]'
 FEEDBACK=True 
+```
+
+### Forwarding command when nothing macthed at all 
+Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else.
+To do that:
+1. In HA create automation that you want to be triggered. Choose a Sentence Trigger (for example: Ask Echo[ to ]{request}). 
+   Add Actions, for example:
+   ```
+   service: media_player.play_media
+   data:
+     media_content_type: custom
+     media_content_id: "{{ trigger.slots.request }}"
+   target:
+      entity_id:
+        - media_player.echo_dot
+   ``` 
+2. In your wac `.env` file add:
+
+```
+FORWARD_TO_CHAT=True
+COMMAND_FINAL_HA_FORWARD="Ask Echo"
+
 ```
 
 Start things up:

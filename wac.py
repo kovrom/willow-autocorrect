@@ -110,7 +110,10 @@ COMMAND_CORRECTED = config(
 # Allow user to skip commands from autolearning
 COMMANDS_TO_SKIP = config(
     'COMMANDS_TO_SKIP', default='[]')
- 
+
+FORWARD_TO_CHAT = config(f'FORWARD_TO_CHAT', default=False, cast=bool)
+COMMAND_FINAL_HA_FORWARD = config(
+    'COMMAND_FINAL_HA_FORWARD', default="", cast=str) 
 
 # Getting list of commands to skip
 # Convert the string to a Python list
@@ -595,10 +598,48 @@ def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_ma
         except Exception as e:
             log.exception(f"WAC FAILED with {e}")
             return "Willow auto correct encountered an error!"
-    else:
+    elif not wac_success and OPENAI_API_KEY != "undefined":
         # Attempt LLM/OpenAI
         speech = openai_chat(command, model=llm_model)
-    if second_ha_time_milliseconds is not None:
+    else:
+        # Final forwarding to HA catch-all "chat" 
+        if FORWARD_TO_CHAT:
+            try:
+                log.info(
+                f"Forwarding provided command '{command}' to final catch-all chat")
+                ha_data = {"text": f"{COMMAND_FINAL_HA_FORWARD} {command}", "language": language}
+                time_start = datetime.now()
+                ha_response = requests.post(
+                    url, headers=ha_headers, json=ha_data, timeout=(1, 10))
+                time_end = datetime.now()
+                ha_time = time_end - time_start
+                third_ha_time_milliseconds = ha_time.total_seconds() * 1000
+                log.info('HA took ' + str(third_ha_time_milliseconds) + ' ms')
+                ha_response = ha_response.json()
+                code = json_get_default(
+                    ha_response, "/response/data/code", "intent_match")
+
+                if code == "no_intent_match":
+                    log.info(f"No HA Command found for catch-all Intent: '{COMMAND_FINAL_HA_FORWARD}'")
+                else:
+                    log.info(f"HA Command found for catch-all Intent: '{COMMAND_FINAL_HA_FORWARD}'")
+
+                # Set speech to HA response
+                speech = json_get_default(
+                    ha_response, "/response/speech/plain/speech", "Success")
+                log.info(f"HA speech: '{speech}'")
+                if FEEDBACK is True:
+                    speech = f"{speech}"
+                log.info(f"Setting final speech to '{speech}'")                                                
+            except Exception as e:
+                log.exception(f"WAC FAILED with {e}")
+                return "Willow auto correct encountered an error!"
+            #Done with forwarding
+
+
+    if second_ha_time_milliseconds is not None and FORWARD_TO_CHAT is True:
+        total_ha_time = first_ha_time_milliseconds + second_ha_time_milliseconds + third_ha_time_milliseconds
+    elif second_ha_time_milliseconds is not None:
         total_ha_time = first_ha_time_milliseconds + second_ha_time_milliseconds
     else:
         total_ha_time = first_ha_time_milliseconds
