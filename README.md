@@ -52,7 +52,9 @@ FEEDBACK=True
 ### Forwarding command when nothing macthed at all 
 Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else.
 To do that:
-1. In HA create automation that you want to be triggered. Choose a Sentence Trigger (for example: Ask Echo[ to ]{request}). 
+1. In HA create automation that you want to be triggered. Choose a Sentence Trigger, for example:
+  `Ask Echo[ to ]{request}.`
+
    Add Actions, for example:
    ```
    service: media_player.play_media
