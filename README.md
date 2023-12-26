@@ -1,6 +1,8 @@
 # Willow Auto Correct (WAC) - PREVIEW
 One step closer to "better than Alexa".
 
+## This fork contains tweaks and modifications that may or may not be compatible with official builds of the main project. The changes implemented here are quick and dirty - they work for my purposes, but are not held to the same standards of quality or stability as the main project. Use at your own risk! Consider this an unofficial playground for experiments and rapid prototyping rather than a robust or supported software package.
+
 ## Introduction
 Voice assistants make use of speech to text (STT/ASR) implementations like Whisper.
 While they work well, most command endpoint platforms (like Home Assistant) have pretty tight matching 
@@ -50,12 +52,18 @@ FEEDBACK=True
 ```
 
 ### Forwarding command when nothing macthed at all 
-Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else.
+Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else. If you want the option to configure which Willow device triggers which specific automation or Amazon Echo Dot, you'll need to use this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git)
+For example, you can make it so your "kitchen" Willow only triggers kitchen automations and/or the kitchen Echo Dot, your "office" Willow only triggers office automations and/or the office Echo Dot, etc
+
 To do that:
-1. In HA create automation that you want to be triggered. Choose a Sentence Trigger, for example:
-  `Ask Echo[ to ]{request}.`
+1. In HA create automation that you want to be triggered. Choose a Sentence Trigger, in the format of: "Your_Trigger-Willow_Hostname", where "Willow_Hostname" is the hostname of your willow, you can get it from WAS Clients page.  For example my kitchen willow hostname is "willow-xxxxxxxxxxxx", so:
+
+  ```
+  Ask Echo-willow-xxxxxxxxxxxx {request}
+  ```
 
    Add Actions, for example:
+
    ```
    service: media_player.play_media
    data:
@@ -63,7 +71,7 @@ To do that:
      media_content_id: "{{ trigger.slots.request }}"
    target:
       entity_id:
-        - media_player.echo_dot
+        - media_player.echo_dot_kitchen
    ``` 
 2. In your wac `.env` file add:
 

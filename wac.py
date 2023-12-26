@@ -514,10 +514,10 @@ def wac_add(command, rank=0.9, source='autolearn'):
 # Request coming from proxy
 
 
-def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_match_threshold=TOKEN_MATCH_THRESHOLD, exact_match=False, semantic="off", semantic_model=TYPESENSE_SEMANTIC_MODEL, vector_distance_threshold=VECTOR_DISTANCE_THRESHOLD, hybrid_score_threshold=HYBRID_SCORE_THRESHOLD, llm_model=OPENAI_MODEL):
+def api_post_proxy_handler(command, language, hostname, distance=SEARCH_DISTANCE, token_match_threshold=TOKEN_MATCH_THRESHOLD, exact_match=False, semantic="off", semantic_model=TYPESENSE_SEMANTIC_MODEL, vector_distance_threshold=VECTOR_DISTANCE_THRESHOLD, hybrid_score_threshold=HYBRID_SCORE_THRESHOLD, llm_model=OPENAI_MODEL):
 
     log.info(
-        f"Processing proxy request for command '{command}' with distance {distance} token match threshold {token_match_threshold} exact match {exact_match} semantic {semantic} with vector distance threshold {vector_distance_threshold} and hybrid threshold {hybrid_score_threshold}")
+        f"Processing proxy request from '{hostname}' for command '{command}' with distance {distance} token match threshold {token_match_threshold} exact match {exact_match} semantic {semantic} with vector distance threshold {vector_distance_threshold} and hybrid threshold {hybrid_score_threshold}")
     # Init speech for when all else goes wrong
     speech = COMMAND_NOT_FOUND
     # Default to command isn't learned
@@ -608,7 +608,7 @@ def api_post_proxy_handler(command, language, distance=SEARCH_DISTANCE, token_ma
             try:
                 log.info(
                 f"Forwarding provided command '{command}' to final catch-all chat")
-                ha_data = {"text": f"{COMMAND_FINAL_HA_FORWARD} {command}", "language": language}
+                ha_data = {"text": f"{COMMAND_FINAL_HA_FORWARD}-{hostname} {command}", "language": language}
                 time_start = datetime.now()
                 ha_response = requests.post(
                     url, headers=ha_headers, json=ha_data, timeout=(1, 10))
@@ -714,6 +714,7 @@ async def api_get_wac(command, distance: Optional[str] = SEARCH_DISTANCE, num_re
 
 
 class PostProxyBody(BaseModel):
+    hostname: Optional[str] = "None"
     text: Optional[str] = "How many lights are on?"
     language: Optional[str] = "en"
 
@@ -729,7 +730,7 @@ async def api_post_proxy(body: PostProxyBody, distance: Optional[int] = SEARCH_D
         elif semantic == "false":
             semantic = "off"
 
-        response = api_post_proxy_handler(body.text, body.language, distance=distance, token_match_threshold=token_match_threshold,
+        response = api_post_proxy_handler(body.text, body.language, body.hostname, distance=distance, token_match_threshold=token_match_threshold,
                                           exact_match=exact_match, semantic=semantic, semantic_model=semantic_model, vector_distance_threshold=vector_distance_threshold, hybrid_score_threshold=hybrid_score_threshold, llm_model=llm_model)
         time_end = datetime.now()
         search_time = time_end - time_start
