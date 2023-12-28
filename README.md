@@ -52,8 +52,10 @@ FEEDBACK=True
 ```
 
 ### Forwarding command when nothing macthed at all 
-Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else. If you want the option to configure which Willow device triggers which specific automation or Amazon Echo Dot, you'll need to use this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git)
+Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else. 
+If you want the option to configure which Willow device triggers which specific automation or Amazon Echo Dot, you'll need to use this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git)
 For example, you can make it so your "kitchen" Willow only triggers kitchen automations and/or the kitchen Echo Dot, your "office" Willow only triggers office automations and/or the office Echo Dot, etc
+If using main project WAS, replace "willow-xxxxxxxxxxxx" with "None" in the steps bellow (The sentence trigger will look like this: "Ask Echo-None {request}").
 
 To do that:
 1. In HA create automation that you want to be triggered. Choose a Sentence Trigger, in the format of: "Your_Trigger-Willow_Hostname", where "Willow_Hostname" is the hostname of your willow, you can get it from WAS Clients page.  For example my kitchen willow hostname is "willow-xxxxxxxxxxxx", so:
