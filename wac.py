@@ -115,6 +115,15 @@ FORWARD_TO_CHAT = config(f'FORWARD_TO_CHAT', default=False, cast=bool)
 COMMAND_FINAL_HA_FORWARD = config(
     'COMMAND_FINAL_HA_FORWARD', default="", cast=str) 
 
+#HA include and exclude for "area awareness" hack :)
+AREA_AWARENESS = config(f'AREA_AWARENESS', default=False, cast=bool)
+WILLOW_LOCATIONS = config(
+    'WILLOW_LOCATIONS', default={})
+WORDS_TO_INCLUDE = config(
+    'WORDS_TO_INCLUDE', default='["turn", "switch"]')
+WORDS_TO_EXCLUDE = config(
+    'WORDS_TO_EXCLUDE', default='["bedroom", "breakfast room", "dining room", "garage", "living room", "kitchen", "office", "all"]')
+
 # Getting list of commands to skip
 # Convert the string to a Python list
 try:
@@ -123,8 +132,39 @@ except json.JSONDecodeError:
 # Handle the case where the string is not a valid JSON list
     log.info(f"Error: COMMANDS_TO_SKIP is not a valid JSON list.")
     commands_to_skip_list = []
+
+# Convert the WORDS_TO_INCLUDE string to a Python list
+try:
+    words_to_include_list = json.loads(WORDS_TO_INCLUDE)
+except json.JSONDecodeError:
+# Handle the case where the string is not a valid JSON list
+    log.info(f"Error: WORDS_TO_INCLUDE is not a valid JSON list.")
+    words_to_include_list = []
+# Convert the WORDS_TO_EXCLUDE string to a Python list
+try:
+    words_to_exclude_list = json.loads(WORDS_TO_EXCLUDE)
+except json.JSONDecodeError:
+# Handle the case where the string is not a valid JSON list
+    log.info(f"Error: WORDS_TO_EXCLUDE is not a valid JSON list.")
+    words_to_exlude_list = []
+# Getting dict of willow locations
+# Convert to a dict
+try:
+    willow_locations_dict = json.loads(WILLOW_LOCATIONS)
+except json.JSONDecodeError:
+# Handle the case where the string is not a valid JSON dict
+    log.info(f"Error: WILLOW_LOCATIONS is not a valid JSON dict.")
+    willow_locations_dict = {}    
+
 # Convert COMMANDS_TO_SKIP into a tuple for startswith
 skip_tuple = tuple(commands_to_skip_list)
+
+# Convert the lists to sets
+include_set = set(words_to_include_list)
+exclude_set = set(words_to_exclude_list)
+def check_command(command):
+    lower_command = command.lower()
+    return any(phrase in lower_command for phrase in include_set) and not any(phrase in lower_command for phrase in exclude_set)
 
 FORCE_OPENAI_MODEL = None
 
@@ -530,8 +570,13 @@ def api_post_proxy_handler(command, language, hostname, distance=SEARCH_DISTANCE
     url = f'{HA_URL}/api/conversation/process'
 
     try:
-        log.info(f"Trying initial HA intent match '{command}'")
-        ha_data = {"text": command, "language": language}
+        if AREA_AWARENESS and check_command(command):
+            location = willow_locations_dict.get(hostname)
+            log.info(f"I probably should try '{command} in the {location}'")
+            ha_data = {"text": f"{command} in the {location}", "language": language}
+        else:
+            log.info(f"Trying initial HA intent match '{command}'")
+            ha_data = {"text": command, "language": language}
         time_start = datetime.now()
         ha_response = requests.post(
             url, headers=ha_headers, json=ha_data, timeout=(1, 10))

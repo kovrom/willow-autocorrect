@@ -1,7 +1,7 @@
 # Willow Auto Correct (WAC) - PREVIEW
 One step closer to "better than Alexa".
 
-## This fork contains tweaks and modifications that may or may not be compatible with official builds of the main project. The changes implemented here are quick and dirty - they work for my purposes, but are not held to the same standards of quality or stability as the main project. Use at your own risk! Consider this an unofficial playground for experiments and rapid prototyping rather than a robust or supported software package.
+## :exclamation: This fork contains tweaks and modifications that may or may not be compatible with official builds of the main project. The changes implemented here are quick and dirty - they work for my purposes, but are not held to the same standards of quality or stability as the main project. Use at your own risk! Consider this an unofficial playground for experiments and rapid prototyping rather than a robust or supported software package.
 
 ## Introduction
 Voice assistants make use of speech to text (STT/ASR) implementations like Whisper.
@@ -52,10 +52,10 @@ FEEDBACK=True
 ```
 
 ### Forwarding command when nothing macthed at all 
-Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else. 
-If you want the option to configure which Willow device triggers which specific automation or Amazon Echo Dot, you'll need to use this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git)
-For example, you can make it so your "kitchen" Willow only triggers kitchen automations and/or the kitchen Echo Dot, your "office" Willow only triggers office automations and/or the office Echo Dot, etc
-If using main project WAS, replace "willow-xxxxxxxxxxxx" with "None" in the steps bellow (The sentence trigger will look like this: "Ask Echo-None {request}").
+Some people find it usefull to do something on "Sorry I couldn't understand that" when all else fails. For example you may want to forward not macthed command to your amazon echo dot, chatgpt or want your HA do something else.\   
+If you want the option to configure which Willow device triggers which specific automation or Amazon Echo Dot, you'll need to use this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git)\  
+For example, you can make it so your "kitchen" Willow only triggers kitchen automations and/or the kitchen Echo Dot, your "office" Willow only triggers office automations and/or the office Echo Dot, etc.\  
+:exclamation: If using main project WAS, replace "willow-xxxxxxxxxxxx" with "None" in the steps bellow (The sentence trigger will look like this: "Ask Echo-None {request}"). :exclamation:
 
 To do that:
 1. In HA create automation that you want to be triggered. Choose a Sentence Trigger, in the format of: "Your_Trigger-Willow_Hostname", where "Willow_Hostname" is the hostname of your willow, you can get it from WAS Clients page.  For example my kitchen willow hostname is "willow-xxxxxxxxxxxx", so:
@@ -82,6 +82,33 @@ FORWARD_TO_CHAT=True
 COMMAND_FINAL_HA_FORWARD="Ask Echo"
 
 ```
+
+### Area awareness, kind of...
+:exclamation: If you want this option you must run this forked WAS: [https://github.com/kovrom/willow-application-server.git](https://github.com/kovrom/willow-application-server.git) :exclamation:\  
+
+Not the smartest way to do it, but hey, it works for me for the time being :man_shrugging:
+
+In your wac `.env` file add. Where "willow-xxxxxxxxxxx0" is your willow hostname and "office" is your HA area:
+
+```
+AREA_AWARENESS=True
+WILLOW_LOCATIONS='{"willow-xxxxxxxxxxx0": "office", "willow-xxxxxxxxxxx1": "kitchen", "willow-xxxxxxxxxxx2": "bedroom"}'
+
+```
+By default the following areas are defined: "bedroom", "breakfast room", "dining room", "garage", "living room", "kitchen", "office", "all"\  
+And two default keywords for "area aware" commands are: "turn", "switch"\ 
+If you would like to override them you can do so in the .env file. Where WORDS_TO_INCLUDE are keywords for "area aware" commands and WORDS_TO_EXCLUDE are your HA areas:
+
+```
+WORDS_TO_INCLUDE='["turn","switch","something", "something", "dark side" ]'
+
+WORDS_TO_EXCLUDE='["bedroom","attic","holodeck"]'
+
+
+``` 
+
+
+
 
 Start things up:
 
