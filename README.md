@@ -97,12 +97,12 @@ WILLOW_LOCATIONS='{"willow-xxxxxxxxxxx0": "office", "willow-xxxxxxxxxxx1": "kitc
 ```
 By default the following areas are defined: "bedroom", "breakfast room", "dining room", "garage", "living room", "kitchen", "office", "all"\  
 And two default keywords for "area aware" commands are: "turn", "switch"\ 
-If you would like to override them you can do so in the .env file. Where WORDS_TO_INCLUDE are keywords for "area aware" commands and WORDS_TO_EXCLUDE are your HA areas:
+If you would like to override them you can do so in the .env file. Where AREA_AWARE_COMMANDS are keywords for "area aware" commands and HA_AREAS are your HA areas:
 
 ```
-WORDS_TO_INCLUDE='["turn","switch","something", "something", "dark side" ]'
+AREA_AWARE_COMMANDS='["turn","switch","something", "something", "dark side" ]'
 
-WORDS_TO_EXCLUDE='["bedroom","attic","holodeck"]'
+HA_AREAS='["bedroom","attic","holodeck"]'
 
 
 ``` 

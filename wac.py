@@ -119,10 +119,10 @@ COMMAND_FINAL_HA_FORWARD = config(
 AREA_AWARENESS = config(f'AREA_AWARENESS', default=False, cast=bool)
 WILLOW_LOCATIONS = config(
     'WILLOW_LOCATIONS', default={})
-WORDS_TO_INCLUDE = config(
-    'WORDS_TO_INCLUDE', default='["turn", "switch"]')
-WORDS_TO_EXCLUDE = config(
-    'WORDS_TO_EXCLUDE', default='["bedroom", "breakfast room", "dining room", "garage", "living room", "kitchen", "office", "all"]')
+AREA_AWARE_COMMANDS = config(
+    'AREA_AWARE_COMMANDS', default='["turn", "switch"]')
+HA_AREAS = config(
+    'HA_AREAS', default='["bedroom", "breakfast room", "dining room", "garage", "living room", "kitchen", "office", "all"]')
 
 # Getting list of commands to skip
 # Convert the string to a Python list
@@ -135,17 +135,17 @@ except json.JSONDecodeError:
 
 # Convert the WORDS_TO_INCLUDE string to a Python list
 try:
-    words_to_include_list = json.loads(WORDS_TO_INCLUDE)
+    words_to_include_list = json.loads(AREA_AWARE_COMMANDS)
 except json.JSONDecodeError:
 # Handle the case where the string is not a valid JSON list
-    log.info(f"Error: WORDS_TO_INCLUDE is not a valid JSON list.")
+    log.info(f"Error: AREA_AWARE_COMMANDS is not a valid JSON list.")
     words_to_include_list = []
 # Convert the WORDS_TO_EXCLUDE string to a Python list
 try:
-    words_to_exclude_list = json.loads(WORDS_TO_EXCLUDE)
+    words_to_exclude_list = json.loads(HA_AREAS)
 except json.JSONDecodeError:
 # Handle the case where the string is not a valid JSON list
-    log.info(f"Error: WORDS_TO_EXCLUDE is not a valid JSON list.")
+    log.info(f"Error: HA_AREAS is not a valid JSON list.")
     words_to_exlude_list = []
 # Getting dict of willow locations
 # Convert to a dict
