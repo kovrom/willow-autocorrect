@@ -118,7 +118,7 @@ COMMAND_FINAL_HA_FORWARD = config(
 #HA include and exclude for "area awareness" hack :)
 AREA_AWARENESS = config(f'AREA_AWARENESS', default=False, cast=bool)
 WILLOW_LOCATIONS = config(
-    'WILLOW_LOCATIONS', default={})
+    'WILLOW_LOCATIONS', default='{}')
 AREA_AWARE_COMMANDS = config(
     'AREA_AWARE_COMMANDS', default='["turn", "switch"]')
 HA_AREAS = config(
