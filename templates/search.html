@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple WAC UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9e9e9;
+            border: 1px dashed #333;
+            border-radius: 4px;
+        }
+        .result-item {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .command {
+            font-size: 16px;
+            color: #333;
+        }
+        .accuracy {
+            font-size: 14px;
+            color: #888;
+        }
+        .snippet {
+            font-size: 14px;
+            background-color: #f4f4f4;
+            padding: 5px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        mark {
+            background-color: yellow;
+            font-weight: bold;
+        }
+.search-query {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+}
+        .form-section-delete {
+            background-color: #ff4444;
+            padding: 20px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+        }
+        .form-section-add {
+            background-color: #33b5e5;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+    <h2>WAC Search Delete Add</h2>
+    
+    <!-- Search Form -->
+    <h3>Search WAC</h3>
+    <form action="/search" method="get">
+        <div class="form-group">
+            <label for="query">Your HA Command:</label>
+            <input type="text" id="query" name="query" placeholder="Enter your search">
+        </div>
+        
+        <div class="form-group">
+            <label for="distance">Distance (optional):</label>
+            <input type="number" id="distance" name="distance" placeholder="Distance" min="0" value="2">
+        </div>
+        
+        <div class="form-group">
+            <label for="num_results">Number of Results (optional):</label>
+            <input type="number" id="num_results" name="num_results" placeholder="Number of Results" min="1" value="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="exact_match">Exact Match:</label>
+            <select name="exact_match">
+                <option value="false">False</option>
+                <option value="true">True</option>                
+            </select>
+        </div>
+        
+        <div class="form-group">            
+            <label for="semantic">Semantic:</label>
+            <select name="semantic">
+                <option value="hybrid">Hybrid</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="semantic_model">Semantic Model:</label>
+            <select id="semantic_model" name="semantic_model">
+                <option value="all-MiniLM-L12-v2">all-MiniLM-L12-v2</option>
+                <option value="gte-small">gte-small</option>
+                <option value="multilingual-e5-small">multilingual-e5-small</option>
+            </select>
+        </div>
+        
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Displaying Search Results -->
+    <div class="results">
+        {% if search_result and search_result.hits %}
+            <div class="search-query">
+       Your Search Query: {{ search_result['request_params']['q'] }}
+    </div>
+            <h3>Possible Search Result Candidates ({{ search_result.found }} found):</h3>
+            {% for hit in search_result.hits %}
+                <div class="result-item">
+                    <div class="result-detail">Document</div>
+                    <div class="result-detail">Command: {{ hit.document.command }}</div>
+                    <div class="result-detail">ID: {{ hit.document.id }}</div>
+                    <div class="result-detail">Rank: {{ hit.document.rank }}</div>
+                    <div class="result-detail">Source: {{ hit.document.source }}</div>
+                    <div class="result-detail">Accuracy: {{ hit.document.accuracy }}</div>
+                    {% if hit.highlight %} 
+                    <div class="snippet">Matched tokens: {{ hit.highlight.command.snippet | safe }}</div>
+                    {% endif %}
+                    <div class="result-detail">Hybrid Search Info:</div>
+                    <div class="result-detail">Rank Fusion Score: {{ hit.hybrid_search_info.rank_fusion_score }}</div>
+                    <div class="result-detail">Vector Distance: {{ hit.vector_distance }}</div>
+                    <div class="result-detail">Text Match Info:</div>
+                    <div class="result-detail">Tokens Matched: {{ hit.text_match_info.tokens_matched }}</div>
+                    <div class="result-detail">Best Field Score: {{ hit.text_match_info.best_field_score }}</div>
+                    <div class="result-detail">Best Field Weight: {{ hit.text_match_info.best_field_weight }}</div>
+                    <div class="result-detail">Fields Matched: {{ hit.text_match_info.fields_matched }}</div>
+                    <div class="result-detail">Score: {{ hit.text_match_info.score }}</div>
+
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No results to display.</p>
+        {% endif %}
+    </div>
+    <!-- Delete Command Section -->
+    <div class="form-section-delete">
+        <h3>Delete Command from WAC</h3>
+        <form id="deleteForm" action="/delete_command" method="post">
+            <label for="command_id">Command ID:</label>
+            <input type="number" id="command_id" name="command_id" placeholder="Enter command ID to delete" min="0" required>
+            
+            <button type="submit">Delete Command</button>
+        </form>
+<!-- Displaying Delete Results -->
+    {% if delete_message is not none %}
+        <h3>Command Results:</h3>
+        <p>{{ delete_message }}</p>
+    {% else %}
+        <p>No results to display.</p>
+    {% endif %}
+
+    </div>
+    <!-- Add Command Section -->
+    <div class="form-section-add">
+        <h3>Add Command to WAC</h3>
+        <form action="/add_command" method="post">
+            <label for="new_command">New Command:</label>
+            <input type="text" id="new_command" name="new_command" placeholder="Enter new command" required>
+                                  
+            <button type="submit">Add Command</button>
+        </form>
+<!-- Displaying Add Results -->
+    {% if add_message is not none %}
+        <h3>Command Results:</h3>
+        <p>{{ add_message }}</p>
+    {% else %}
+        <p>No results to display.</p>
+    {% endif %}
+
+    </div>
+</body>
+</html>

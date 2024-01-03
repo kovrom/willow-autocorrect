@@ -129,6 +129,12 @@ DOUBLE CHECK: Make sure you have "WAS Command Endpoint (EXPERIMENTAL)" enabled u
 
 While you're being brave why don't you try Willow One Wake (WOW) and play around with notifications?
 
+### Simple basic UI (not even). Search, delete, add
+
+This fork of WAC has a very rudimentary interface at `http://your_machine_ip:9000/` where you can run a search with various parameters. You can also delete command that was auto-learned wrong. And lastly you can add commands manually by typing them, you can use it for "seeding" correct commands in the beginning, for example.    
+The search output provided is the raw result from typesense and very verbose.  
+More api info is available at `http://your_machine_ip:9000/docs` 
+
 ### Learning Flow (Autolearn)
 
 Initially all WAC does is replace "Sorry, I didn't understand that" with "Sorry, I can't find that command".
