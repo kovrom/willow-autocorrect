@@ -105,6 +105,16 @@
         }
 
     </style>
+    <script>
+        function toggleAliasInput() {
+            // Get the checkbox and text input elements
+            var checkbox = document.getElementById('is_alias');
+            var aliasInput = document.getElementById('alias');
+            
+            // Toggle the disabled property of the alias input based on the checkbox's checked state
+            aliasInput.disabled = !checkbox.checked;
+        }
+    </script>
 </head>
 <body>
     <h2>WAC Search Delete Add</h2>
@@ -168,6 +178,10 @@
                     <div class="result-detail">Document</div>
                     <div class="result-detail">Command: {{ hit.document.command }}</div>
                     <div class="result-detail">ID: {{ hit.document.id }}</div>
+                    {% if hit.document.is_alias %}
+                    <div class="result-detail">Is Alias: {{ hit.document.is_alias }}</div>
+                    <div class="result-detail">Alias: {{ hit.document.alias }}</div>
+                    {% endif %}
                     <div class="result-detail">Rank: {{ hit.document.rank }}</div>
                     <div class="result-detail">Source: {{ hit.document.source }}</div>
                     <div class="result-detail">Accuracy: {{ hit.document.accuracy }}</div>
@@ -214,6 +228,15 @@
         <form action="/add_command" method="post">
             <label for="new_command">New Command:</label>
             <input type="text" id="new_command" name="new_command" placeholder="Enter new command" required>
+            <label class="checkbox-inline" for="is_alias">
+                <input type="checkbox" id="is_alias" name="is_alias" onchange="toggleAliasInput()">Is Alias
+            </label>
+    
+                <div class="text-input-group">
+                    <label for="alias">For:</label>
+                    <input type="text" id="alias" name="alias" placeholder="Enter existing command" disabled>
+                </div>
+    
                                   
             <button type="submit">Add Command</button>
         </form>

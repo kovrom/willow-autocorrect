@@ -147,7 +147,7 @@ try:
 except json.JSONDecodeError:
 # Handle the case where the string is not a valid JSON list
     log.info(f"Error: HA_AREAS is not a valid JSON list.")
-    words_to_exlude_list = []
+    words_to_exclude_list = []
 # Getting dict of willow locations
 # Convert to a dict
 try:
@@ -297,9 +297,14 @@ async def handle_search(request: Request,
     # Render the same page with the search result
     return templates.TemplateResponse("search.html", {"request": request, "search_result": results})
 @app.post("/add_command", summary="Handle Add Command for Simple UI page")
-async def add_command(request: Request, new_command: str = Form(...)):
+async def add_command(request: Request, new_command: str = Form(...),
+                                        is_alias: bool = Form(False), 
+                                        alias: str = Form(None)):
     try:
-        added_result=wac_add(new_command, rank=1.0, source='manual_entry')
+        if is_alias and alias:
+            added_result=wac_add_alias(new_command, alias, rank=1.0, source='manual_entry')
+        else:
+            added_result=wac_add(new_command, rank=1.0, source='manual_entry')
         response = "Command Added" if added_result else "Command Not Added. Refusing to add duplicate command"
     except Exception as e:
         log.exception(f"Add new command failed with {e}")
@@ -319,7 +324,7 @@ async def delete_command(request: Request, command_id: int = Form(...)):
         log.info(f"Failed to deleted command with id {command_id}")
         response = f"Failed to deleted command with id {command_id}"
 
-    return templates.TemplateResponse("search.html", {"request": request, "delete_message": response})
+    return templates.TemplateResponse("search.html", {"request": request, "delete_message": response})   
 
 ###End of Simple temp UI
 
@@ -535,15 +540,17 @@ def wac_search(command, exact_match=False, distance=SEARCH_DISTANCE, num_results
             wac_command = json_get(
                 wac_search_result, "/hits[0]/document/command")
             source = json_get(wac_search_result, "/hits[0]/document/source")
+            is_alias = json_get_default(wac_search_result, "/hits[0]/document/is_alias", False)
+            alias = json_get_default(wac_search_result, "/hits[0]/document/alias", "")
         except:
-            log.info(f"Command '{command}' not found")
+            log.info(f"Exception! Command '{command}' not found")
             return success, command
 
         if exact_match and wac_command:
             log.info(
                 f"Returning exact command '{wac_command}' match with id {id}")
             success = True
-            return success, wac_command
+            return success, wac_command if not is_alias else alias
 
         log.info(
             f"Trying scoring evaluation with top match '{wac_command}' with id {id} from source {source}")
@@ -582,7 +589,7 @@ def wac_search(command, exact_match=False, distance=SEARCH_DISTANCE, num_results
     except Exception as e:
         log.exception(f"WAC search for command '{command}' failed with {e}")
 
-    return success, wac_command
+    return success, wac_command if not is_alias else alias
 
 # WAC Add
 
@@ -618,6 +625,41 @@ def wac_add(command, rank=0.9, source='autolearn'):
 
     return learned
 
+# WAC Add alias
+
+
+def wac_add_alias(command, alias, rank=1.0, source='manual_entry'):
+    log.info(f"Doing WAC add for command '{command}' and alias '{alias}'")
+    learned = False
+    try:
+        log.info(f"Searching WAC before adding command '{command}'")
+        wac_exact_search_status, wac_command = wac_search(
+            command, exact_match=True)
+        if wac_exact_search_status is True:
+            log.info('Refusing to add duplicate command')
+            return learned
+
+        # Get current time as int
+        curr_dt = datetime.now()
+        timestamp = int(round(curr_dt.timestamp()))
+        log.debug(f"Current timestamp: {timestamp}")
+        command_json = {
+            'command': command,
+            'is_alias': True,
+            'alias': alias,
+            'rank': rank,
+            'accuracy': 1.0,
+            'source': source,
+            'timestamp': timestamp,
+        }
+        # Use create to update in real time
+        typesense_client.collections[COLLECTION].documents.create(command_json)
+        log.info(f"Added WAC command '{command}' and alias '{alias}")
+        learned = True
+    except Exception as e:
+        log.exception(f"WAC add for command '{command}' failed with {e}")
+
+    return learned
 
 # Request coming from proxy
 
