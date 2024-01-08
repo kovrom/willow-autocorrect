@@ -543,7 +543,7 @@ def wac_search(command, exact_match=False, distance=SEARCH_DISTANCE, num_results
             is_alias = json_get_default(wac_search_result, "/hits[0]/document/is_alias", False)
             alias = json_get_default(wac_search_result, "/hits[0]/document/alias", "")
         except:
-            log.info(f"Command '{command}' not found")
+            log.info(f"Exception! Command '{command}' not found")
             return success, command
 
         if exact_match and wac_command:
