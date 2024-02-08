@@ -697,7 +697,7 @@ def api_post_proxy_handler(command, language, hostname, distance=SEARCH_DISTANCE
         code = json_get_default(
             ha_response, "/response/data/code", "intent_match")
 
-        if code == "no_intent_match":
+        if code == "no_intent_match" or "no_valid_targets":
             log.info(f"No Initial HA Intent Match for command '{command}'")
         else:
             log.info(f"Initial HA Intent Match for command '{command}'")
@@ -739,7 +739,7 @@ def api_post_proxy_handler(command, language, hostname, distance=SEARCH_DISTANCE
             code = json_get_default(
                 ha_response, "/response/data/code", "intent_match")
 
-            if code == "no_intent_match":
+            if code == "no_intent_match" or "no_valid_targets":
                 log.info(f"No WAC Command HA Intent Match: '{wac_command}'")
             else:
                 log.info(f"WAC Command HA Intent Match: '{wac_command}'")
@@ -775,7 +775,7 @@ def api_post_proxy_handler(command, language, hostname, distance=SEARCH_DISTANCE
                 code = json_get_default(
                     ha_response, "/response/data/code", "intent_match")
 
-                if code == "no_intent_match":
+                if code == "no_intent_match" or "no_valid_targets":
                     log.info(f"No HA Command found for catch-all Intent: '{COMMAND_FINAL_HA_FORWARD}'")
                 else:
                     log.info(f"HA Command found for catch-all Intent: '{COMMAND_FINAL_HA_FORWARD}'")
