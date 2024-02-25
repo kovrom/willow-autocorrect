@@ -3,6 +3,9 @@ One step closer to "better than Alexa".
 
 ## :exclamation: This fork contains tweaks and modifications that may or may not be compatible with official builds of the main project. The changes implemented here are quick and dirty - they work for my purposes, but are not held to the same standards of quality or stability as the main project. Use at your own risk! Consider this an unofficial playground for experiments and rapid prototyping rather than a robust or supported software package.
 
+### WAS+WAC Preview
+You can also try a preview of WAS with WAC integrated on this branch: [https://github.com/kovrom/willow-application-server/tree/wac](https://github.com/kovrom/willow-application-server/tree/wac)
+
 ## Introduction
 Voice assistants make use of speech to text (STT/ASR) implementations like Whisper.
 While they work well, most command endpoint platforms (like Home Assistant) have pretty tight matching 
